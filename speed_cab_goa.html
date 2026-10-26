@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Speed Cab Goa — Book a Taxi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sea:#0b4f4a;
+    --sea-deep:#083b37;
+    --coral:#ff6b4a;
+    --sand:#faf3e6;
+    --sand-dim:#f0e6d2;
+    --laterite:#c1502e;
+    --taxi:#ffb703;
+    --ink:#1a2421;
+    --ink-soft:#5c6864;
+    --ok:#2f8f5b;
+    --err:#c1502e;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--sand-dim);
+    font-family:'DM Sans',Arial,sans-serif;
+    color:var(--ink);
+  }
+  h1,h2,h3,.brand{font-family:'Fraunces',serif;}
+  .app{
+    max-width:420px;
+    min-height:100vh;
+    margin:auto;
+    background:var(--sand);
+    position:relative;
+    padding-bottom:86px;
+    box-shadow:0 0 60px rgba(8,59,55,.15);
+  }
+
+  /* ---------- Header ---------- */
+  .head{
+    background:linear-gradient(160deg,var(--sea) 0%,var(--sea-deep) 100%);
+    color:var(--sand);
+    padding:26px 22px 34px;
+    position:relative;
+    overflow:hidden;
+  }
+  .head::after{
+    content:"";
+    position:absolute;
+    left:0;right:0;bottom:-1px;
+    height:26px;
+    background:var(--sand);
+    border-radius:60% 60% 0 0 / 100% 100% 0 0;
+    transform:scaleX(1.4);
+  }
+  .brand{font-size:23px;font-weight:700;letter-spacing:.2px;}
+  .brand span{color:var(--taxi);}
+  .tagline{opacity:.75;font-size:13px;margin-top:4px;}
+  .status-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(255,183,3,.15);
+    border:1px solid rgba(255,183,3,.4);
+    color:var(--taxi);
+    font-size:12px;font-weight:700;
+    padding:5px 11px;border-radius:99px;
+    margin-top:14px;
+  }
+  .status-pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--taxi);box-shadow:0 0 0 3px rgba(255,183,3,.25);}
+
+  .p{padding:20px;}
+  .screen{display:none;}
+  .active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ---------- Route signature motif ---------- */
+  .route{
+    display:flex;align-items:stretch;gap:12px;
+    padding:16px 4px;
+  }
+  .route .dots{
+    display:flex;flex-direction:column;align-items:center;
+    width:16px;
+  }
+  .route .pin{width:11px;height:11px;border-radius:50%;background:var(--taxi);border:2px solid var(--sea);}
+  .route .pin.end{background:var(--coral);}
+  .route .line{
+    flex:1;width:2px;
+    background:repeating-linear-gradient(to bottom,var(--ink-soft) 0 5px,transparent 5px 10px);
+    margin:3px 0;
+  }
+  .route .stops{flex:1;display:flex;flex-direction:column;justify-content:space-between;}
+  .route .stop-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:700;}
+  .route .stop-value{font-size:14.5px;font-weight:700;margin-top:2px;}
+
+  /* ---------- Cards & inputs ---------- */
+  .hero{
+    background:linear-gradient(135deg,#fff 0%,var(--sand-dim) 100%);
+    border:1px solid #e9dfc9;
+    border-radius:22px;
+    padding:22px;
+  }
+  .hero h1{font-size:24px;line-height:1.2;margin:0 0 6px;}
+  .hero p{margin:0;color:var(--ink-soft);font-size:14px;}
+
+  .card{
+    background:#fff;
+    border:1px solid #e9dfc9;
+    border-radius:var(--radius);
+    padding:18px;
+    margin:16px 0;
+  }
+  .card h3{font-size:15px;margin:0 0 12px;}
+  .field{margin-bottom:12px;}
+  .field label{
+    display:block;font-size:12px;font-weight:700;
+    color:var(--ink-soft);margin-bottom:6px;
+    text-transform:uppercase;letter-spacing:.05em;
+  }
+  .field input,.field select,.field textarea{
+    width:100%;
+    background:var(--sand-dim);
+    border:1.5px solid transparent;
+    border-radius:12px;
+    padding:13px 14px;
+    font-size:15px;
+    font-family:inherit;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{
+    border-color:var(--sea);
+    background:#fff;
+  }
+  .field input.error,.field select.error{
+    border-color:var(--err);
+    background:#fdf1ee;
+  }
+  .field .err-msg{
+    display:none;
+    color:var(--err);
+    font-size:12px;
+    margin-top:5px;
+    font-weight:600;
+  }
+  .field.invalid .err-msg{display:block;}
+  .hint{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+
+  .zones{display:flex;gap:10px;margin-bottom:4px;}
+  .zones button{
+    flex:1;padding:13px;border-radius:12px;
+    border:1.5px solid #e9dfc9;background:#fff;
+    font-weight:700;font-size:14px;color:var(--ink-soft);
+    font-family:inherit;cursor:pointer;
+    transition:.15s;
+  }
+  .zones button.on{
+    background:var(--sea);border-color:var(--sea);color:#fff;
+  }
+
+  .trip-types{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+  .trip-types button{
+    padding:9px 14px;border-radius:99px;
+    border:1.5px solid #e9dfc9;background:#fff;
+    font-size:13px;font-weight:700;color:var(--ink-soft);
+    font-family:inherit;cursor:pointer;
+  }
+  .trip-types button.on{background:var(--taxi);border-color:var(--taxi);color:var(--ink);}
+
+  .btn{
+    width:100%;padding:15px;border:0;border-radius:14px;
+    font-weight:700;font-size:15.5px;
+    font-family:inherit;cursor:pointer;
+    margin-top:4px;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:transform .1s, box-shadow .15s;
+  }
+  .btn:active{transform:scale(.98);}
+  .yellow{background:var(--taxi);color:var(--ink);box-shadow:0 6px 16px rgba(255,183,3,.35);}
+  .dark{background:var(--sea);color:#fff;box-shadow:0 6px 16px rgba(11,79,74,.25);}
+  .coral{background:var(--coral);color:#fff;box-shadow:0 6px 16px rgba(255,107,74,.3);}
+  .outline{background:#fff;border:1.5px solid #e0d6c0;color:var(--ink);}
+  .btn[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none;}
+
+  .row2{display:flex;gap:10px;}
+  .row2>.field{flex:1;}
+
+  .divider{display:flex;align-items:center;gap:10px;color:var(--ink-soft);font-size:12px;margin:14px 0;}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:#e9dfc9;}
+
+  .info-row{display:flex;justify-content:space-between;font-size:14px;padding:8px 0;border-bottom:1px dashed #e9dfc9;}
+  .info-row:last-child{border-bottom:0;}
+  .info-row b{font-weight:700;}
+
+  /* ---------- Success screen ---------- */
+  .ok-screen{text-align:center;padding:44px 24px 20px;}
+  .tick{
+    width:70px;height:70px;border-radius:50%;
+    background:var(--ok);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:34px;margin:0 auto 18px;
+  }
+  .ref{
+    display:inline-block;background:var(--sand-dim);
+    border:1px dashed #cbb98f;border-radius:10px;
+    padding:6px 14px;font-weight:700;font-size:13px;
+    margin-top:6px;letter-spacing:.03em;
+  }
+
+  /* ---------- Nav ---------- */
+  .nav{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+    max-width:420px;width:100%;
+    display:flex;background:#fff;
+    border-top:1px solid #e9dfc9;
+    padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+  }
+  .nav button{
+    flex:1;padding:9px 4px;border:0;background:transparent;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    font-size:11px;font-weight:700;color:var(--ink-soft);
+    font-family:inherit;cursor:pointer;border-radius:12px;
+  }
+  .nav button.on{color:var(--sea);background:var(--sand-dim);}
+  .nav .icon{font-size:19px;}
+
+  .contact-card{
+    display:flex;align-items:center;gap:12px;
+    background:#fff;border:1px solid #e9dfc9;border-radius:16px;
+    padding:14px;margin:12px 0;
+  }
+  .contact-card .ic{
+    width:42px;height:42px;border-radius:50%;
+    background:var(--sand-dim);display:flex;align-items:center;justify-content:center;
+    font-size:18px;flex-shrink:0;
+  }
+  .contact-card .txt{flex:1;}
+  .contact-card .txt b{display:block;font-size:14px;}
+  .contact-card .txt span{font-size:12.5px;color:var(--ink-soft);}
+
+  .badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+  .badge{
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18);
+    color:var(--sand);font-size:11.5px;font-weight:600;
+    padding:5px 11px;border-radius:99px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== HOME ===== -->
+  <main id="home" class="screen active">
+    <div class="head">
+      <div class="brand">SPEED <span>CAB</span> GOA</div>
+      <div class="tagline">North Goa • South Goa • Airport transfers</div>
+      <div class="status-pill">Taking bookings now</div>
+    </div>
+    <div class="p" style="padding-top:6px;">
+      <div class="hero">
+        <h1>Your ride,<br>your way.</h1>
+        <p>Tell us where you're headed — we'll confirm your taxi by call or WhatsApp within minutes.</p>
+        <button class="btn yellow" onclick="goBook()" style="margin-top:16px;">🚕 Book a taxi</button>
+      </div>
+
+      <div class="card">
+        <h3>Where we drive</h3>
+        <div class="route">
+          <div class="dots"><div class="pin"></div><div class="line"></div><div class="pin end"></div></div>
+          <div class="stops">
+            <div><div class="stop-label">Popular pickup</div><div class="stop-value">Dabolim Airport / Hotels</div></div>
+            <div><div class="stop-label">Popular drop</div><div class="stop-value">Anywhere in North or South Goa</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-card" onclick="callNow()">
+        <div class="ic">📞</div>
+        <div class="txt"><b>Call us directly</b><span>+91 80802 70635 — fastest for urgent rides</span></div>
+      </div>
+      <div class="contact-card" onclick="waDirect()">
+        <div class="ic">💬</div>
+        <div class="txt"><b>WhatsApp us</b><span>Send trip details, get a quick confirmation</span></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== BOOKING ===== -->
+  <main id="booking" class="screen">
+    <div class="head" style="padding-bottom:24px;">
+      <div class="brand" style="font-size:19px;">Book your taxi</div>
+      <div class="tagline">Fill in your trip — takes 30 seconds</div>
+    </div>
+    <div class="p" style="padding-top:10px;">
+
+      <div class="card">
+        <h3>Area</h3>
+        <div class="zones">
+          <button id="zone-n" class="on" onclick="setZone('n')">North Goa</button>
+          <button id="zone-s" onclick="setZone('s')">South Goa</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Trip type</h3>
+        <div class="trip-types">
+          <button class="on" data-t="Airport pickup" onclick="setTrip(this)">Airport pickup</button>
+          <button data-t="Airport drop" onclick="setTrip(this)">Airport drop</button>
+          <button data-t="Local / point to point" onclick="setTrip(this)">Local ride</button>
+          <button data-t="Full day rental" onclick="setTrip(this)">Full day</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Trip details</h3>
+        <div class="field" id="f-pickup">
+          <label for="pickup">Pickup location</label>
+          <input id="pickup" type="text" placeholder="e.g. Calangute Beach / Hotel name">
+          <div class="err-msg">Please enter a pickup location</div>
+        </div>
+        <div class="field" id="f-drop">
+          <label for="drop">Destination</label>
+          <input id="drop" type="text" placeholder="e.g. Dabolim Airport">
+          <div class="err-msg">Please enter a destination</div>
+        </div>
+        <div class="row2">
+          <div class="field" id="f-date">
+            <label for="date">Date</label>
+            <input id="date" type="date">
+            <div class="err-msg">Pick a date</div>
+          </div>
+          <div class="field" id="f-time">
+            <label for="time">Time</label>
+            <input id="time" type="time">
+            <div class="err-msg">Pick a time</div>
+          </div>
+        </div>
+        <div class="field" id="f-pax">
+          <label for="pax">Passengers</label>
+          <select id="pax">
+            <option>1</option><option selected>2</option><option>3</option><option>4</option><option>5+</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Your details</h3>
+        <div class="field" id="f-name">
+          <label for="name">Full name</label>
+          <input id="name" type="text" placeholder="Your name">
+          <div class="err-msg">Please enter your name</div>
+        </div>
+        <div class="field" id="f-phone">
+          <label for="phone">Phone number (WhatsApp)</label>
+          <input id="phone" type="tel" placeholder="e.g. 9876543210">
+          <div class="err-msg">Enter a valid 10-digit phone number</div>
+        </div>
+        <div class="field">
+          <label for="notes">Notes <span style="text-transform:none;font-weight:400;">(optional)</span></label>
+          <textarea id="notes" rows="2" placeholder="Flight number, extra luggage, etc."></textarea>
+        </div>
+      </div>
+
+      <button class="btn yellow" onclick="review()">Review booking →</button>
+      <button class="btn outline" onclick="goHome()">← Back</button>
+    </div>
+  </main>
+
+  <!-- ===== REVIEW ===== -->
+  <main id="reviewScreen" class="screen">
+    <div class="head" style="padding-bottom:24px;">
+      <div class="brand" style="font-size:19px;">Confirm details</div>
+      <div class="tagline">Check everything looks right</div>
+    </div>
+    <div class="p" style="padding-top:10px;">
+      <div class="card">
+        <div class="route">
+          <div class="dots"><div class="pin"></div><div class="line"></div><div class="pin end"></div></div>
+          <div class="stops">
+            <div><div class="stop-label">Pickup</div><div class="stop-value" id="r-pickup">—</div></div>
+            <div><div class="stop-label">Destination</div><div class="stop-value" id="r-drop">—</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="info-row"><span>Area</span><b id="r-zone">—</b></div>
+        <div class="info-row"><span>Trip type</span><b id="r-trip">—</b></div>
+        <div class="info-row"><span>Date & time</span><b id="r-datetime">—</b></div>
+        <div class="info-row"><span>Passengers</span><b id="r-pax">—</b></div>
+        <div class="info-row"><span>Name</span><b id="r-name">—</b></div>
+        <div class="info-row"><span>Phone</span><b id="r-phone">—</b></div>
+      </div>
+      <button class="btn yellow" onclick="confirmBooking()">✅ Confirm & send booking</button>
+      <button class="btn outline" onclick="show('booking')">← Edit details</button>
+    </div>
+  </main>
+
+  <!-- ===== SUCCESS ===== -->
+  <main id="success" class="screen">
+    <div class="ok-screen">
+      <div class="tick">✓</div>
+      <h2 style="margin:0 0 8px;">Booking request ready</h2>
+      <p style="color:var(--ink-soft);font-size:14px;margin:0 0 4px;">Tap below to send it on WhatsApp — Speed Cab Goa will confirm your ride shortly.</p>
+      <div class="ref" id="ref-code">REF —</div>
+    </div>
+    <div class="p" style="padding-top:6px;">
+      <button class="btn coral" onclick="sendFinalWA()">💬 Send booking on WhatsApp</button>
+      <button class="btn dark" onclick="callNow()">📞 Or call us now</button>
+      <button class="btn outline" onclick="goHome()">Back to home</button>
+    </div>
+  </main>
+
+  <!-- ===== NAV ===== -->
+  <nav class="nav">
+    <button id="nav-home" class="on" onclick="goHome()"><span class="icon">🏠</span>Home</button>
+    <button id="nav-book" onclick="goBook()"><span class="icon">🚕</span>Book</button>
+    <button id="nav-call" onclick="callNow()"><span class="icon">📞</span>Call</button>
+    <button id="nav-wa" onclick="waDirect()"><span class="icon">💬</span>WhatsApp</button>
+  </nav>
+</div>
+
+<script>
+const PHONE = "918080270635";
+let state = { zone:'n', trip:'Airport pickup' };
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(e=>e.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));
+  if(id==='home') document.getElementById('nav-home').classList.add('on');
+  if(id==='booking') document.getElementById('nav-book').classList.add('on');
+  window.scrollTo(0,0);
+}
+function goHome(){ show('home'); }
+function goBook(){ show('booking'); }
+
+function setZone(z){
+  state.zone = z;
+  document.getElementById('zone-n').classList.toggle('on', z==='n');
+  document.getElementById('zone-s').classList.toggle('on', z==='s');
+}
+function setTrip(btn){
+  document.querySelectorAll('.trip-types button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  state.trip = btn.dataset.t;
+}
+
+function fieldVal(id){ return document.getElementById(id).value.trim(); }
+
+function markError(fieldId, bad){
+  const f = document.getElementById(fieldId);
+  f.classList.toggle('invalid', bad);
+  const input = f.querySelector('input,select,textarea');
+  if(input) input.classList.toggle('error', bad);
+}
+
+function validate(){
+  let ok = true;
+  const pickup = fieldVal('pickup');
+  const drop = fieldVal('drop');
+  const date = fieldVal('date');
+  const time = fieldVal('time');
+  const name = fieldVal('name');
+  const phone = fieldVal('phone').replace(/\D/g,'');
+
+  markError('f-pickup', !pickup); if(!pickup) ok=false;
+  markError('f-drop', !drop); if(!drop) ok=false;
+  markError('f-date', !date); if(!date) ok=false;
+  markError('f-time', !time); if(!time) ok=false;
+  markError('f-name', !name); if(!name) ok=false;
+  const phoneOk = phone.length === 10;
+  markError('f-phone', !phoneOk); if(!phoneOk) ok=false;
+
+  return ok;
+}
+
+function review(){
+  if(!validate()){
+    document.querySelector('.field.invalid')?.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  const pickup = fieldVal('pickup');
+  const drop = fieldVal('drop');
+  const date = fieldVal('date');
+  const time = fieldVal('time');
+  const pax = fieldVal('pax');
+  const name = fieldVal('name');
+  const phone = fieldVal('phone');
+  const notes = fieldVal('notes');
+
+  state = {...state, pickup, drop, date, time, pax, name, phone, notes};
+
+  document.getElementById('r-pickup').textContent = pickup;
+  document.getElementById('r-drop').textContent = drop;
+  document.getElementById('r-zone').textContent = state.zone==='n' ? 'North Goa' : 'South Goa';
+  document.getElementById('r-trip').textContent = state.trip;
+  document.getElementById('r-datetime').textContent = formatDateTime(date,time);
+  document.getElementById('r-pax').textContent = pax;
+  document.getElementById('r-name').textContent = name;
+  document.getElementById('r-phone').textContent = phone;
+
+  show('reviewScreen');
+}
+
+function formatDateTime(dateStr, timeStr){
+  if(!dateStr) return '—';
+  const d = new Date(dateStr+'T'+(timeStr||'00:00'));
+  const opts = { weekday:'short', day:'numeric', month:'short' };
+  const dateFmt = d.toLocaleDateString('en-IN', opts);
+  const timeFmt = timeStr ? d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : '';
+  return dateFmt + (timeFmt ? ', '+timeFmt : '');
+}
+
+function buildMessage(){
+  const s = state;
+  const zoneLabel = s.zone==='n' ? 'North Goa' : 'South Goa';
+  let msg = `Hi Speed Cab Goa, I'd like to book a taxi.\n\n`;
+  msg += `Trip type: ${s.trip}\n`;
+  msg += `Area: ${zoneLabel}\n`;
+  msg += `Pickup: ${s.pickup}\n`;
+  msg += `Destination: ${s.drop}\n`;
+  msg += `Date & time: ${formatDateTime(s.date,s.time)}\n`;
+  msg += `Passengers: ${s.pax}\n`;
+  msg += `Name: ${s.name}\n`;
+  msg += `Phone: ${s.phone}\n`;
+  if(s.notes) msg += `Notes: ${s.notes}\n`;
+  msg += `\nRef: ${s.ref}`;
+  return msg;
+}
+
+function confirmBooking(){
+  state.ref = 'SCG' + Math.floor(1000 + Math.random()*9000);
+  document.getElementById('ref-code').textContent = 'REF ' + state.ref;
+  show('success');
+}
+
+function sendFinalWA(){
+  const msg = encodeURIComponent(buildMessage());
+  location.href = `https://wa.me/${PHONE}?text=${msg}`;
+}
+
+function callNow(){ location.href = 'tel:+' + PHONE; }
+function waDirect(){
+  const msg = encodeURIComponent("Hi Speed Cab Goa, I'd like to book a taxi.");
+  location.href = `https://wa.me/${PHONE}?text=${msg}`;
+}
+
+// set sensible default date/time = today
+(function initDefaults(){
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const dd = String(now.getDate()).padStart(2,'0');
+  document.getElementById('date').min = `${yyyy}-${mm}-${dd}`;
+})();
+</script>
+</body>
+</html>
